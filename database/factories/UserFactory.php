@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\RoleName;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -34,6 +35,23 @@ class UserFactory extends Factory
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
         ];
+    }
+
+    /**
+     * Assign a role to the user after creation.
+     *
+     * This has to be `afterCreating` rather than a `state()`: a role assignment is
+     * a row in the `role_user` pivot table, and the pivot needs the user's primary
+     * key — which does not exist until the insert has happened. A state() callback
+     * runs before that, so there would be no id to point at.
+     *
+     * @example User::factory()->withRole(RoleName::Admin)->create();
+     */
+    public function withRole(RoleName|string $role): static
+    {
+        return $this->afterCreating(function (User $user) use ($role): void {
+            $user->assignRole($role);
+        });
     }
 
     /**

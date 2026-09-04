@@ -11,4 +11,9 @@ export type NavItem = {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon | null;
     isActive?: boolean;
+    /**
+     * Permission slug required to see this item. Omit it for links everyone
+     * signed in may use (e.g. Dashboard). Checked by `useAuthorization().can()`.
+     */
+    permission?: string;
 };

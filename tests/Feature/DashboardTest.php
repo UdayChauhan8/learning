@@ -1,6 +1,11 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+// Opted in per-file because tests/Pest.php has the global RefreshDatabase
+// commented out. Without it these tests create users in the real database.
+uses(RefreshDatabase::class);
 
 test('guests are redirected to the login page', function () {
     $response = $this->get(route('dashboard'));
@@ -8,6 +13,8 @@ test('guests are redirected to the login page', function () {
 });
 
 test('authenticated users can visit the dashboard', function () {
+    // No role needed: /dashboard sits in the plain ['auth', 'verified'] group,
+    // not behind the admin role gate.
     $user = User::factory()->create();
     $this->actingAs($user);
 

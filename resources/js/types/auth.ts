@@ -12,6 +12,10 @@ export type User = {
 
 export type Auth = {
     user: User;
+    /** Role slugs, e.g. `['admin']`. Populated by HandleInertiaRequests::share(). */
+    roles: string[];
+    /** Permission slugs, e.g. `['events.view', 'events.create']`. */
+    permissions: string[];
 };
 
 /* @chisel-passkeys */
