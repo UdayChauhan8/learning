@@ -11,9 +11,7 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
+
     public function run(): void
     {
         // Roles and permissions must exist before any user can be assigned one —

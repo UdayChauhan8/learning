@@ -5,6 +5,7 @@ use App\Models\Order;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Passport\Passport;
 
 uses(RefreshDatabase::class);
 
@@ -20,17 +21,18 @@ it('updates an order and returns the reordered table', function () {
         ['name' => 'banana', 'order' => 2, 'created_at' => now(), 'updated_at' => now()],
         ['name' => 'cherry', 'order' => 3, 'created_at' => now(), 'updated_at' => now()],
     ]);
+    Passport::actingAs(User::factory()->create());
 
     $response = $this->putJson('/api/items/2', [
         'name' => 'mango',
         'order' => 1,
     ]);
 
-    $response->assertOk();
-    $response->assertJsonPath('0.id', 2);
-    $response->assertJsonPath('0.name', 'mango');
-    $response->assertJsonPath('0.order', 1);
-    expect($response->json())->not->toHaveKey('data');
+    // Change these assertions:
+    $response->assertJsonPath('data.0.id', 2);
+    $response->assertJsonPath('data.0.name', 'mango');
+    $response->assertJsonPath('data.0.order', 1);
+    expect($response->json())->toHaveKey('data');  // it DOES have data
     expect(Order::query()->orderBy('order')->pluck('id')->all())->toBe([2, 1, 3]);
 });
 

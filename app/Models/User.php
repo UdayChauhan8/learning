@@ -11,9 +11,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
-use Laravel\Fortify\Contracts\PasskeyUser;
-use Laravel\Fortify\PasskeyAuthenticatable;
-use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Passport\Contracts\OAuthenticatable;   // ← NEW: Passport interface
+use Laravel\Passport\HasApiTokens;                  // ← NEW: Passport trait
 
 /**
  * @property int $id
@@ -21,27 +20,28 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property string $email
  * @property Carbon|null $email_verified_at
  * @property string $password
- * @property string|null $two_factor_secret
- * @property string|null $two_factor_recovery_codes
- * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Collection<int, Role> $roles
  */
+// REMOVED: two_factor_secret, two_factor_recovery_codes, two_factor_confirmed_at
+// Those columns belong to Fortify. We no longer use them.
 #[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
-class User extends Authenticatable implements PasskeyUser
+#[Hidden(['password', 'remember_token'])]
+
+// CHANGED: implements OAuthenticatable instead of PasskeyUser
+// OAuthenticatable is the Passport contract. It tells Passport how to find
+// the user from a token. Without it, Passport throws a runtime error.
+class User extends Authenticatable implements OAuthenticatable
 {
     /**
-     * `HasRoles` adds the `roles()` relation plus `hasRole()`, `hasPermissionTo()`,
-     * `assignRole()` and friends. Authorization itself is not implemented here —
-     * `AppServiceProvider::configureAuthorization()` funnels every `Gate` / `can()`
-     * check through `hasPermissionTo()`, so this model stays a plain data object.
+     * REMOVED: PasskeyAuthenticatable, TwoFactorAuthenticatable (Fortify traits)
+     * ADDED:   HasApiTokens (Passport trait — gives createToken(), tokens() relation)
      *
      * @use HasFactory<UserFactory>
      */
-    use HasFactory, HasRoles, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     /**
      * Get the attributes that should be cast.
@@ -52,8 +52,8 @@ class User extends Authenticatable implements PasskeyUser
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'two_factor_confirmed_at' => 'datetime',
+            'password'          => 'hashed',
+            // REMOVED: two_factor_confirmed_at cast (no longer needed)
         ];
     }
 }

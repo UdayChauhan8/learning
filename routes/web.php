@@ -7,6 +7,48 @@ use App\Http\Controllers\Admin\GreetSettingController;
 use App\Http\Controllers\Admin\OrderController;
 use Illuminate\Support\Facades\Route;
 
+
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\PasswordController;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Auth routes (guests only)
+// ─────────────────────────────────────────────────────────────────────────────
+// The `guest` middleware redirects already-authenticated users away from these
+// pages. There's no point in showing the login form to someone already logged in.
+Route::middleware('guest')->group(function () {
+
+    // Login
+    Route::get('/login', [AuthController::class, 'showLogin'])
+        ->name('login');           // ← MUST be named 'login' (Laravel depends on this)
+
+    Route::post('/login', [AuthController::class, 'login']);
+
+    // Registration
+    Route::get('/register', [AuthController::class, 'showRegister'])
+        ->name('register');
+
+    Route::post('/register', [AuthController::class, 'register']);
+
+    // Forgot password — request a reset link
+    Route::get('/forgot-password', [PasswordController::class, 'showForgotForm'])
+        ->name('password.request');  // ← MUST be named 'password.request'
+
+    Route::post('/forgot-password', [PasswordController::class, 'sendResetLink'])
+        ->name('password.email');
+
+    // Reset password — use the token from the email
+    Route::get('/reset-password/{token}', [PasswordController::class, 'showResetForm'])
+        ->name('password.reset');   // ← MUST be named 'password.reset'
+
+    Route::post('/reset-password', [PasswordController::class, 'resetPassword'])
+        ->name('password.update');
+});
+
+// Logout (auth users only — guests can't log out)
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->middleware('auth')
+    ->name('logout');
 /*
 |--------------------------------------------------------------------------
 | Public routes
