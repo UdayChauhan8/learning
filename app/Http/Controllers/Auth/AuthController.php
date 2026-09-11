@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -18,7 +19,6 @@ use Inertia\Response;
 class AuthController extends Controller
 {
     use PasswordValidationRules, ProfileValidationRules;
-
 
     public function showLogin(Request $request): Response
     {
@@ -41,7 +41,7 @@ class AuthController extends Controller
         return Inertia::render('auth/register', [
             // passwordRules: the browser uses this to show a tooltip.
             // We pull it from Laravel's Password::defaults() — same as Fortify did.
-            'passwordRules' => \Illuminate\Validation\Rules\Password::defaults()
+            'passwordRules' => Password::defaults()
                 ->toPasswordRulesString(),
         ]);
     }
@@ -61,7 +61,7 @@ class AuthController extends Controller
         // Step 1: Validate inputs — just email + password format checks.
         // This does NOT check against the database yet.
         $request->validate([
-            'email'    => ['required', 'string', 'email'],
+            'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
         ]);
 
@@ -76,10 +76,10 @@ class AuthController extends Controller
             $seconds = RateLimiter::availableIn('login.'.$throttleKey);
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.throttle', [
+                'email' => [trans('auth.throttle', [
                     'seconds' => $seconds,
                     'minutes' => ceil($seconds / 60),
-                ]),
+                ])],
             ])->status(429);
         }
 
@@ -130,8 +130,8 @@ class AuthController extends Controller
         // Create the user. The `password` cast on the model automatically
         // bcrypt-hashes the plain-text password before saving.
         $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
+            'name' => $request->name,
+            'email' => $request->email,
             'password' => $request->password,
         ]);
 

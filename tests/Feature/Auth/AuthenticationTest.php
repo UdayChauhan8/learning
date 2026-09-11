@@ -2,7 +2,7 @@
 
 use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str; 
+use Illuminate\Support\Str;
 
 test('login screen can be rendered', function () {
     $response = $this->get(route('login'));
@@ -21,7 +21,6 @@ test('users can authenticate using the login screen', function () {
     $this->assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));
 });
-
 
 test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();
@@ -47,11 +46,12 @@ test('users can logout', function () {
 test('users are rate limited', function () {
     $user = User::factory()->create();
 
-RateLimiter::increment('login.' . Str::transliterate(Str::lower($user->email) . '|127.0.0.1'), amount: 5);
-    $response = $this->post(route('login'), [
+    RateLimiter::increment('login.'.Str::transliterate(Str::lower($user->email).'|127.0.0.1'), amount: 5);
+
+    $response = $this->postJson(route('login'), [
         'email' => $user->email,
         'password' => 'wrong-password',
     ]);
 
-    $response->assertTooManyRequests();
+    $response->assertStatus(429);
 });
