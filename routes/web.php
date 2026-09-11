@@ -22,7 +22,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])
         ->name('login');           // ← MUST be named 'login' (Laravel depends on this)
 
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->name('login.store');
 
     // Registration
     Route::get('/register', [AuthController::class, 'showRegister'])

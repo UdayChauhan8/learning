@@ -80,7 +80,7 @@ class AuthController extends Controller
                     'seconds' => $seconds,
                     'minutes' => ceil($seconds / 60),
                 ]),
-            ]);
+            ])->status(429);
         }
 
         // Step 3: Attempt to log in using the 'web' guard (session-based).
